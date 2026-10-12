@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/session";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminSubNav } from "@/components/admin/admin-sub-nav";
 
 export default async function AdminLayout({
   children,
@@ -25,7 +26,7 @@ export default async function AdminLayout({
             <nav className="flex items-center gap-4 text-sm font-medium">
               <Link
                 href="/admin"
-                className="text-foreground transition-colors hover:text-primary"
+                className="text-foreground transition-colors hover:text-primary font-medium"
               >
                 Dashboard
               </Link>
@@ -53,6 +54,8 @@ export default async function AdminLayout({
           </div>
         </div>
       </header>
+
+      <AdminSubNav />
 
       <main className="flex-1">{children}</main>
     </div>

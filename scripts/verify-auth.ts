@@ -17,7 +17,7 @@ import { authenticateCredentials, getSafeCallbackUrl } from "../src/services/aut
 import { registerUser } from "../src/services/users";
 import { signSessionToken, verifySessionToken } from "../src/lib/auth-token";
 import { db } from "../src/lib/db";
-import { ConflictError, ForbiddenError, UnauthorizedError } from "../src/lib/errors";
+import { ConflictError } from "../src/lib/errors";
 
 let passed = 0;
 let failed = 0;

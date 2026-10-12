@@ -14,7 +14,8 @@
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "db:verify": "tsx scripts/verify-constraints.ts",
-    "auth:verify": "tsx scripts/verify-auth.ts"
+    "auth:verify": "tsx scripts/verify-auth.ts",
+    "admin:verify": "tsx scripts/verify-admin.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

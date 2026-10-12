@@ -1,15 +1,58 @@
 import bcrypt from "bcryptjs";
+import type { Prisma, UserRole, UserStatus } from "@prisma/client";
 import { db } from "@/lib/db";
-import { ConflictError, ValidationError } from "@/lib/errors";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { registerSchema, type RegisterInput } from "@/lib/validation/auth";
 
 export interface SafeUser {
   id: string;
   name: string;
   email: string;
-  role: "ADMIN" | "MEMBER";
-  status: "PENDING" | "ACTIVE" | "DISABLED";
+  role: UserRole;
+  status: UserStatus;
   createdAt: Date;
+}
+
+export interface SafeUserDetails {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  approvedAt: Date | null;
+  createdAt: Date;
+  approvedBy: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+export const safeUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  status: true,
+  approvedAt: true,
+  createdAt: true,
+  approvedBy: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} as const;
+
+export interface ListUsersOptions {
+  status?: UserStatus;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ListUsersResult {
+  users: SafeUserDetails[];
+  total: number;
 }
 
 /**
@@ -59,4 +102,207 @@ export async function registerUser(input: RegisterInput): Promise<SafeUser> {
   });
 
   return user;
+}
+
+/**
+ * Counts all users currently awaiting administrator approval.
+ */
+export async function countPendingUsers(): Promise<number> {
+  return db.user.count({
+    where: { status: "PENDING" },
+  });
+}
+
+/**
+ * Lists users with optional status filter, case-insensitive search (name/email),
+ * and pagination. Orders PENDING first, then newest first.
+ * Never selects or returns passwordHash.
+ */
+export async function listUsers(options: ListUsersOptions = {}): Promise<ListUsersResult> {
+  const page = Math.max(1, options.page ?? 1);
+  const pageSize = Math.max(1, Math.min(100, options.pageSize ?? 10));
+  const skip = (page - 1) * pageSize;
+
+  const where: Prisma.UserWhereInput = {};
+
+  if (options.status) {
+    where.status = options.status;
+  }
+
+  if (options.search && options.search.trim().length > 0) {
+    const term = options.search.trim();
+    where.OR = [
+      { name: { contains: term, mode: "insensitive" } },
+      { email: { contains: term, mode: "insensitive" } },
+    ];
+  }
+
+  const [total, users] = await Promise.all([
+    db.user.count({ where }),
+    db.user.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: [
+        { status: "asc" }, // PENDING is 1st in PostgreSQL enum order
+        { createdAt: "desc" },
+      ],
+      select: safeUserSelect,
+    }),
+  ]);
+
+  return { users, total };
+}
+
+/**
+ * Approves a PENDING user, setting their status to ACTIVE and recording the acting admin.
+ * Uses atomic updateMany with status: "PENDING" to prevent concurrent double-approvals.
+ */
+export async function approveUser(adminId: string, userId: string): Promise<SafeUserDetails> {
+  const result = await db.user.updateMany({
+    where: {
+      id: userId,
+      status: "PENDING",
+    },
+    data: {
+      status: "ACTIVE",
+      approvedById: adminId,
+      approvedAt: new Date(),
+    },
+  });
+
+  if (result.count === 0) {
+    const existing = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, status: true },
+    });
+    if (!existing) {
+      throw new NotFoundError("User not found");
+    }
+    throw new ConflictError("This user is no longer pending");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: safeUserSelect,
+  });
+
+  return user!;
+}
+
+/**
+ * Rejects a PENDING user, setting their status to DISABLED.
+ * Uses atomic updateMany with status: "PENDING" to prevent race conditions.
+ */
+export async function rejectUser(adminId: string, userId: string): Promise<SafeUserDetails> {
+  const result = await db.user.updateMany({
+    where: {
+      id: userId,
+      status: "PENDING",
+    },
+    data: {
+      status: "DISABLED",
+    },
+  });
+
+  if (result.count === 0) {
+    const existing = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true, status: true },
+    });
+    if (!existing) {
+      throw new NotFoundError("User not found");
+    }
+    throw new ConflictError("This user is no longer pending");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: safeUserSelect,
+  });
+
+  return user!;
+}
+
+/**
+ * Disables an ACTIVE user.
+ * - An admin cannot disable their own account.
+ * - The last ACTIVE admin cannot be disabled.
+ * - Checks and update run atomically inside a single transaction.
+ * - Reservations remain untouched.
+ */
+export async function disableUser(adminId: string, userId: string): Promise<SafeUserDetails> {
+  if (userId === adminId) {
+    throw new ForbiddenError("You cannot disable your own account");
+  }
+
+  return db.$transaction(async (tx) => {
+    const target = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, status: true },
+    });
+
+    if (!target) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (target.status !== "ACTIVE") {
+      throw new ConflictError("Only active users can be disabled");
+    }
+
+    // Safety rule: Last active admin check
+    if (target.role === "ADMIN") {
+      const activeAdminCount = await tx.user.count({
+        where: {
+          role: "ADMIN",
+          status: "ACTIVE",
+        },
+      });
+
+      if (activeAdminCount <= 1) {
+        throw new ConflictError("Cannot disable the last active administrator");
+      }
+    }
+
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: {
+        status: "DISABLED",
+      },
+      select: safeUserSelect,
+    });
+
+    return updated;
+  });
+}
+
+/**
+ * Re-enables a DISABLED user, setting status to ACTIVE and updating approval metadata.
+ * Only DISABLED users can be re-enabled.
+ */
+export async function enableUser(adminId: string, userId: string): Promise<SafeUserDetails> {
+  const existing = await db.user.findUnique({
+    where: { id: userId },
+    select: { id: true, status: true },
+  });
+
+  if (!existing) {
+    throw new NotFoundError("User not found");
+  }
+
+  if (existing.status !== "DISABLED") {
+    throw new ConflictError("Only disabled users can be re-enabled");
+  }
+
+  const updated = await db.user.update({
+    where: { id: userId },
+    data: {
+      status: "ACTIVE",
+      approvedById: adminId,
+      approvedAt: new Date(),
+    },
+    select: safeUserSelect,
+  });
+
+  return updated;
 }
