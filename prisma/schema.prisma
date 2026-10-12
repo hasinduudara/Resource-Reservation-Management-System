@@ -6,3 +6,86 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserRole {
+  ADMIN
+  MEMBER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String     @map("name")
+  email        String     @unique @map("email")
+  passwordHash String     @map("password_hash")
+  role         UserRole   @default(MEMBER) @map("role")
+  status       UserStatus @default(PENDING) @map("status")
+
+  approvedById String?   @map("approved_by_id") @db.Uuid
+  approvedBy   User?     @relation("UserApprovals", fields: [approvedById], references: [id], onDelete: Restrict)
+  approvedUsers User[]   @relation("UserApprovals")
+  approvedAt   DateTime? @map("approved_at") @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  reservations          Reservation[] @relation("ReservationUser")
+  cancelledReservations Reservation[] @relation("ReservationCancelledBy")
+
+  @@map("users")
+}
+
+model ResourceCategory {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String     @unique @map("name")
+  description String?    @map("description")
+  resources   Resource[]
+
+  @@map("resource_categories")
+}
+
+model Resource {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId  String           @map("category_id") @db.Uuid
+  category    ResourceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name        String           @map("name")
+  location    String?          @map("location")
+  capacity    Int?             @map("capacity")
+  description String?          @map("description")
+  isActive    Boolean          @default(true) @map("is_active")
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  reservations Reservation[]
+
+  @@map("resources")
+}
+
+model Reservation {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId    String            @map("resource_id") @db.Uuid
+  resource      Resource          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  userId        String            @map("user_id") @db.Uuid
+  user          User              @relation("ReservationUser", fields: [userId], references: [id], onDelete: Restrict)
+  purpose       String?           @map("purpose")
+  startTime     DateTime          @map("start_time") @db.Timestamptz(6)
+  endTime       DateTime          @map("end_time") @db.Timestamptz(6)
+  status        ReservationStatus @default(CONFIRMED) @map("status")
+  cancelledAt   DateTime?         @map("cancelled_at") @db.Timestamptz(6)
+  cancelledById String?           @map("cancelled_by_id") @db.Uuid
+  cancelledBy   User?             @relation("ReservationCancelledBy", fields: [cancelledById], references: [id], onDelete: Restrict)
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([resourceId, startTime])
+  @@index([userId, startTime])
+  @@map("reservations")
+}
