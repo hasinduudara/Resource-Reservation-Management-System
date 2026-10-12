@@ -1,0 +1,25 @@
+# Optional Docker Compose configuration for reviewers who do not have PostgreSQL installed locally.
+# NOTE: If Docker is used, DATABASE_URL in .env must use port 5433 and password postgres:
+# DATABASE_URL=postgresql://postgres:postgres@localhost:5433/reservations
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: rrsm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: reservations
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d reservations"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
