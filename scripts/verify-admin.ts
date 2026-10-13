@@ -267,6 +267,12 @@ async function runTests() {
     "Server actions without admin session reject execution"
   );
 
+  // Restore Diana to PENDING so auth:verify and manual testing have a clean baseline
+  await db.user.updateMany({
+    where: { email: "diana@example.com" },
+    data: { status: "PENDING", approvedById: null, approvedAt: null },
+  });
+
   // ----------------------------------------------------
   // SUMMARY
   // ----------------------------------------------------

@@ -25,15 +25,11 @@ const navItems: NavItem[] = [
   },
   {
     title: "Resources",
-    href: "#",
-    disabled: true,
-    badge: "Soon",
+    href: "/admin/resources",
   },
   {
     title: "Categories",
-    href: "#",
-    disabled: true,
-    badge: "Soon",
+    href: "/admin/categories",
   },
   {
     title: "Reservations",
