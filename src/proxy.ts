@@ -32,9 +32,21 @@ export async function proxy(request: NextRequest) {
 
   const authenticated = await isCoarselyAuthenticated(request);
 
-  // Authenticated users visiting /login or /register are redirected to /resources
-  if (authenticated && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/resources", request.url));
+  // If visiting /login or /register
+  if (pathname === "/login" || pathname === "/register") {
+    // If arriving with callbackUrl, the server-side guard already rejected the session
+    // (e.g. user was deleted, modified in DB, or is no longer ACTIVE).
+    // Clear the stale cookie and allow the login/register page to render without looping.
+    if (request.nextUrl.searchParams.has("callbackUrl")) {
+      const response = NextResponse.next();
+      response.cookies.delete(SESSION_COOKIE_NAME);
+      return response;
+    }
+
+    // Authenticated users visiting /login or /register directly are redirected to /resources
+    if (authenticated) {
+      return NextResponse.redirect(new URL("/resources", request.url));
+    }
   }
 
   // Protected paths: (app) and (admin) routes

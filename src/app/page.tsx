@@ -6,6 +6,6 @@ export default async function HomePage() {
   if (user) {
     redirect("/resources");
   } else {
-    redirect("/login");
+    redirect("/login?callbackUrl=%2Fresources");
   }
 }
