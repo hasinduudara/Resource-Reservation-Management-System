@@ -16,6 +16,7 @@
     "db:verify": "tsx scripts/verify-constraints.ts",
     "auth:verify": "tsx scripts/verify-auth.ts",
     "admin:verify": "tsx scripts/verify-admin.ts",
+    "db:verify:admin": "tsx scripts/verify-admin.ts",
     "resources:verify": "tsx scripts/verify-resources.ts",
     "db:verify:reservations": "tsx scripts/verify-reservations.ts",
     "db:verify:availability": "tsx scripts/verify-availability.ts"

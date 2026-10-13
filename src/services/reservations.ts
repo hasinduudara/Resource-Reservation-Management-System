@@ -362,3 +362,217 @@ export async function listUpcomingForResource(
     isMine: Boolean(options?.viewerId && r.userId === options.viewerId),
   }));
 }
+
+export interface AdminReservationItem {
+  id: string;
+  purpose: string | null;
+  startTime: Date;
+  endTime: Date;
+  status: "CONFIRMED" | "CANCELLED";
+  displayStatus: ReservationDisplayStatus;
+  canCancel: boolean;
+  cancelledAt: Date | null;
+  createdAt: Date;
+  resource: {
+    id: string;
+    name: string;
+    category: {
+      name: string;
+    };
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  cancelledBy: {
+    name: string;
+  } | null;
+}
+
+export interface ListAllReservationsFilters {
+  resourceId?: string;
+  q?: string;
+  status?: "all" | "upcoming" | "in_progress" | "completed" | "cancelled";
+  from?: string;
+  to?: string;
+}
+
+export interface ListAllReservationsOptions {
+  page?: number;
+  pageSize?: number;
+  actor?: {
+    role: UserRole;
+  };
+}
+
+export interface ListAllReservationsResult {
+  items: AdminReservationItem[];
+  total: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * Lists all reservations across the system with administrative filtering and pagination.
+ * Restricted to administrators.
+ */
+export async function listAllReservations(
+  filters?: ListAllReservationsFilters,
+  options?: ListAllReservationsOptions
+): Promise<ListAllReservationsResult> {
+  if (options?.actor && options.actor.role !== "ADMIN") {
+    throw new ForbiddenError("Only administrators can access this service.");
+  }
+
+  const page = Math.max(1, options?.page ?? 1);
+  const pageSize = Math.max(1, Math.min(100, options?.pageSize ?? 15));
+  const skip = (page - 1) * pageSize;
+  const now = new Date();
+
+  const where: Prisma.ReservationWhereInput = {};
+
+  // Resource filter
+  if (filters?.resourceId && filters.resourceId.trim().length > 0) {
+    where.resourceId = filters.resourceId.trim();
+  }
+
+  // User search (matches name or email, case-insensitive)
+  if (filters?.q && filters.q.trim().length > 0) {
+    const term = filters.q.trim();
+    where.user = {
+      OR: [
+        { name: { contains: term, mode: "insensitive" } },
+        { email: { contains: term, mode: "insensitive" } },
+      ],
+    };
+  }
+
+  // Date range filter: START time falls within [from 00:00, to+1 day 00:00) Asia/Colombo
+  if (filters?.from || filters?.to) {
+    const timeFilter: Prisma.DateTimeFilter = {};
+    if (filters.from && filters.from.trim().length > 0) {
+      timeFilter.gte = toUtc(`${filters.from.trim()} 00:00:00`);
+    }
+    if (filters.to && filters.to.trim().length > 0) {
+      const toDayStartUtc = toUtc(`${filters.to.trim()} 00:00:00`);
+      timeFilter.lt = new Date(toDayStartUtc.getTime() + 24 * 60 * 60 * 1000);
+    }
+    where.startTime = timeFilter;
+  }
+
+  // Status filter (mapped from computed display statuses)
+  if (filters?.status && filters.status !== "all") {
+    switch (filters.status) {
+      case "upcoming":
+        where.status = "CONFIRMED";
+        where.startTime = {
+          ...((where.startTime as Prisma.DateTimeFilter) || {}),
+          gt: now,
+        };
+        break;
+      case "in_progress":
+        where.status = "CONFIRMED";
+        where.startTime = {
+          ...((where.startTime as Prisma.DateTimeFilter) || {}),
+          lte: now,
+        };
+        where.endTime = { gt: now };
+        break;
+      case "completed":
+        where.status = "CONFIRMED";
+        where.endTime = { lte: now };
+        break;
+      case "cancelled":
+        where.status = "CANCELLED";
+        break;
+    }
+  }
+
+  const [total, records] = await Promise.all([
+    db.reservation.count({ where }),
+    db.reservation.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: { startTime: "desc" },
+      select: {
+        id: true,
+        purpose: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        cancelledAt: true,
+        createdAt: true,
+        resource: {
+          select: {
+            id: true,
+            name: true,
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        cancelledBy: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const items: AdminReservationItem[] = records.map((r) => {
+    const displayStatus = getReservationDisplayStatus(r.status, r.startTime, r.endTime, now);
+    const canCancel = r.status === "CONFIRMED" && r.endTime > now;
+
+    return {
+      id: r.id,
+      purpose: r.purpose,
+      startTime: r.startTime,
+      endTime: r.endTime,
+      status: r.status,
+      displayStatus,
+      canCancel,
+      cancelledAt: r.cancelledAt,
+      createdAt: r.createdAt,
+      resource: r.resource,
+      user: r.user,
+      cancelledBy: r.cancelledBy,
+    };
+  });
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  return {
+    items,
+    total,
+    totalPages,
+    page,
+    pageSize,
+  };
+}
+
+/**
+ * Admin-specific cancellation wrapper. Reuses the core atomic cancelReservation service,
+ * strictly verifying that the caller is an administrator.
+ */
+export async function cancelReservationAsAdmin(
+  actor: { id: string; role: UserRole },
+  reservationId: string
+) {
+  if (actor.role !== "ADMIN") {
+    throw new ForbiddenError("Only administrators can perform this action.");
+  }
+  return cancelReservation(actor, reservationId);
+}

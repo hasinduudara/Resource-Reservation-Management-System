@@ -33,9 +33,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Reservations",
-    href: "#",
-    disabled: true,
-    badge: "Soon",
+    href: "/admin/reservations",
   },
 ];
 
