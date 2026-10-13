@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { getResourceById } from "@/services/resources";
 import { listUpcomingForResource } from "@/services/reservations";
+import { getDayAvailability } from "@/services/availability";
+import { parseBookingPrefill } from "@/lib/validation/availability";
 import { formatInAppTimezone } from "@/lib/time";
 import { NotFoundError } from "@/lib/errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { BookingForm } from "./booking-form";
 import { UpcomingSchedule } from "./upcoming-schedule";
+import { DayTimeline } from "./day-timeline";
 
 interface ResourceDetailPageProps {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    date?: string;
+    start?: string;
+    end?: string;
   }>;
 }
 
@@ -33,9 +41,13 @@ export async function generateMetadata({ params }: ResourceDetailPageProps): Pro
   }
 }
 
-export default async function ResourceDetailPage({ params }: ResourceDetailPageProps) {
+export default async function ResourceDetailPage({
+  params,
+  searchParams,
+}: ResourceDetailPageProps) {
   const user = await requireUser();
   const { id } = await params;
+  const query = await searchParams;
 
   let resource;
   try {
@@ -47,10 +59,19 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
     throw err;
   }
 
-  const upcomingSlots = await listUpcomingForResource(resource.id, {
-    days: 14,
-    viewerId: user.id,
-  });
+  const [availability, upcomingSlots] = await Promise.all([
+    getDayAvailability({
+      resourceId: resource.id,
+      date: query.date,
+      viewer: { id: user.id, role: user.role },
+    }),
+    listUpcomingForResource(resource.id, {
+      days: 14,
+      viewerId: user.id,
+    }),
+  ]);
+
+  const prefill = parseBookingPrefill(query.start, query.end);
 
   return (
     <div className="container mx-auto p-4 sm:p-6 max-w-5xl space-y-8">
@@ -154,12 +175,17 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
         </CardContent>
       </Card>
 
+      {/* Day Availability Timeline Card */}
+      <DayTimeline availability={availability} resourceId={resource.id} />
+
       {/* Booking and Upcoming Schedule Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <BookingForm
           resourceId={resource.id}
           resourceName={resource.name}
           isActive={resource.isActive}
+          defaultStart={prefill?.startLocal}
+          defaultEnd={prefill?.endLocal}
         />
         <UpcomingSchedule slots={upcomingSlots} />
       </div>

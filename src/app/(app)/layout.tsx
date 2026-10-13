@@ -30,6 +30,12 @@ export default async function AppLayout({
                 Resources
               </Link>
               <Link
+                href="/availability"
+                className="text-foreground transition-colors hover:text-foreground/80"
+              >
+                Availability
+              </Link>
+              <Link
                 href="/my-reservations"
                 className="text-foreground transition-colors hover:text-foreground/80"
               >

@@ -16,9 +16,17 @@ interface BookingFormProps {
   resourceId: string;
   resourceName: string;
   isActive: boolean;
+  defaultStart?: string;
+  defaultEnd?: string;
 }
 
-export function BookingForm({ resourceId, resourceName, isActive }: BookingFormProps) {
+export function BookingForm({
+  resourceId,
+  resourceName,
+  isActive,
+  defaultStart = "",
+  defaultEnd = "",
+}: BookingFormProps) {
   const [state, formAction, isPending] = useActionState(createReservationAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -50,7 +58,7 @@ export function BookingForm({ resourceId, resourceName, isActive }: BookingFormP
   }
 
   return (
-    <Card className="shadow-xs border">
+    <Card className="shadow-xs border" id="booking-card">
       <CardHeader className="pb-4">
         <CardTitle className="text-xl font-bold tracking-tight">Book this resource</CardTitle>
         <CardDescription className="text-xs text-muted-foreground">
@@ -58,7 +66,7 @@ export function BookingForm({ resourceId, resourceName, isActive }: BookingFormP
         </CardDescription>
       </CardHeader>
 
-      <form ref={formRef} action={formAction}>
+      <form key={`${defaultStart}-${defaultEnd}`} ref={formRef} action={formAction}>
         <input type="hidden" name="resourceId" value={resourceId} />
 
         <CardContent className="space-y-4">
@@ -98,6 +106,7 @@ export function BookingForm({ resourceId, resourceName, isActive }: BookingFormP
                 name="startLocal"
                 type="datetime-local"
                 step="900"
+                defaultValue={defaultStart}
                 required
                 disabled={isPending}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -116,6 +125,7 @@ export function BookingForm({ resourceId, resourceName, isActive }: BookingFormP
                 name="endLocal"
                 type="datetime-local"
                 step="900"
+                defaultValue={defaultEnd}
                 required
                 disabled={isPending}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"

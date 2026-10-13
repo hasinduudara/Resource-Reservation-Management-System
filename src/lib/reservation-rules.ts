@@ -20,6 +20,15 @@ export const PURPOSE_MIN_LENGTH = 3;
 /** Maximum character length for reservation purpose. */
 export const PURPOSE_MAX_LENGTH = 200;
 
+/** Visible starting hour for the day timeline display (06:00). */
+export const TIMELINE_START_HOUR = 6;
+
+/** Visible ending hour for the day timeline display (22:00). */
+export const TIMELINE_END_HOUR = 22;
+
+/** Maximum number of days in the past allowed for viewing availability history. */
+export const MAX_HISTORY_DAYS = 30;
+
 /**
  * Checks whether a Date object aligns exactly with the configured slot boundary.
  * Verifies that seconds and milliseconds are zero, and minutes are a multiple of SLOT_MINUTES.

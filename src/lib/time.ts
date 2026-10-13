@@ -23,3 +23,11 @@ export function formatInAppTimezone(
 ): string {
   return formatInTimeZone(date, APP_TIMEZONE, formatStr);
 }
+
+/**
+ * Returns today's date string in APP_TIMEZONE as "yyyy-MM-dd".
+ */
+export function getTodayInAppTimezone(date: Date = new Date()): string {
+  return formatInTimeZone(date, APP_TIMEZONE, "yyyy-MM-dd");
+}
+
