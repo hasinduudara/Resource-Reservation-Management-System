@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { getResourceById } from "@/services/resources";
+import { listUpcomingForResource } from "@/services/reservations";
 import { formatInAppTimezone } from "@/lib/time";
 import { NotFoundError } from "@/lib/errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { BookingForm } from "./booking-form";
+import { UpcomingSchedule } from "./upcoming-schedule";
 
 interface ResourceDetailPageProps {
   params: Promise<{
@@ -44,8 +47,13 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
     throw err;
   }
 
+  const upcomingSlots = await listUpcomingForResource(resource.id, {
+    days: 14,
+    viewerId: user.id,
+  });
+
   return (
-    <div className="container mx-auto p-4 sm:p-6 max-w-4xl space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 max-w-5xl space-y-8">
       {/* Navigation & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
@@ -143,23 +151,18 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
               </p>
             </div>
           </div>
-
-          {/* Clearly marked placeholder section for future phases */}
-          <div className="rounded-xl border border-dashed p-6 sm:p-8 text-center bg-muted/20 space-y-3">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h3 className="text-base font-semibold tracking-tight">
-              Availability and booking will appear here
-            </h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Real-time schedule timelines, availability checking, and instant reservation booking will be enabled in upcoming phases.
-            </p>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Booking and Upcoming Schedule Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <BookingForm
+          resourceId={resource.id}
+          resourceName={resource.name}
+          isActive={resource.isActive}
+        />
+        <UpcomingSchedule slots={upcomingSlots} />
+      </div>
     </div>
   );
 }

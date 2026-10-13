@@ -16,7 +16,8 @@
     "db:verify": "tsx scripts/verify-constraints.ts",
     "auth:verify": "tsx scripts/verify-auth.ts",
     "admin:verify": "tsx scripts/verify-admin.ts",
-    "resources:verify": "tsx scripts/verify-resources.ts"
+    "resources:verify": "tsx scripts/verify-resources.ts",
+    "db:verify:reservations": "tsx scripts/verify-reservations.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

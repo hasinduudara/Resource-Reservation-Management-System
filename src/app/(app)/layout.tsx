@@ -29,9 +29,12 @@ export default async function AppLayout({
               >
                 Resources
               </Link>
-              <span className="text-muted-foreground/60 cursor-not-allowed">
+              <Link
+                href="/my-reservations"
+                className="text-foreground transition-colors hover:text-foreground/80"
+              >
                 My Reservations
-              </span>
+              </Link>
               {user.role === "ADMIN" && (
                 <Link
                   href="/admin"
