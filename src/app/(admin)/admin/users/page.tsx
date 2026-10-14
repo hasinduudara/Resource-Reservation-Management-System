@@ -21,6 +21,8 @@ import {
   RejectButton,
   DisableButton,
   EnableButton,
+  MakeAdminButton,
+  RemoveAdminButton,
 } from "@/components/admin/user-action-buttons";
 
 export const metadata: Metadata = {
@@ -293,7 +295,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                               You
                             </span>
                           ) : user.status === "ACTIVE" ? (
-                            <DisableButton userId={user.id} userName={user.name} />
+                            <div className="flex items-center justify-end gap-1.5">
+                              {user.role === "MEMBER" ? (
+                                <MakeAdminButton userId={user.id} userName={user.name} />
+                              ) : (
+                                <RemoveAdminButton userId={user.id} userName={user.name} />
+                              )}
+                              <DisableButton userId={user.id} userName={user.name} />
+                            </div>
                           ) : user.status === "DISABLED" ? (
                             <EnableButton userId={user.id} userName={user.name} />
                           ) : (

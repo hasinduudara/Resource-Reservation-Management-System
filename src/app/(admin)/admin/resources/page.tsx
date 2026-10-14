@@ -193,6 +193,12 @@ export default async function AdminResourcesPage({ searchParams }: AdminResource
                       <TableCell className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
+                            href={`/resources/${resource.id}`}
+                            className={buttonVariants({ variant: "ghost", size: "sm", className: "h-8 px-2.5 text-xs text-primary hover:text-primary" })}
+                          >
+                            View schedule
+                          </Link>
+                          <Link
                             href={`/admin/resources/${resource.id}/edit`}
                             className={buttonVariants({ variant: "ghost", size: "sm", className: "h-8 px-2.5 text-xs" })}
                           >

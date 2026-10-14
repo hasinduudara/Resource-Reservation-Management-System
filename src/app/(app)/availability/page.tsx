@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { listCategories } from "@/services/categories";
 import { findFreeResources } from "@/services/availability";
@@ -28,6 +29,9 @@ interface AvailabilityPageProps {
 
 export default async function AvailabilityPage({ searchParams }: AvailabilityPageProps) {
   const user = await requireUser();
+  if (user.role === "ADMIN") {
+    redirect("/admin");
+  }
   const params = await searchParams;
 
   const todayStr = getTodayInAppTimezone();

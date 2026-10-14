@@ -12,25 +12,28 @@ function getJwtSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-async function isCoarselyAuthenticated(request: NextRequest): Promise<boolean> {
+async function getCoarseAuth(request: NextRequest): Promise<{ authenticated: boolean; role?: string }> {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
-  if (!token) return false;
+  if (!token) return { authenticated: false };
 
   try {
     const secret = getJwtSecret();
     const { payload } = await jwtVerify(token, secret, {
       algorithms: ["HS256"],
     });
-    return Boolean(payload?.sub);
+    return {
+      authenticated: Boolean(payload?.sub),
+      role: typeof payload?.role === "string" ? payload.role : undefined,
+    };
   } catch {
-    return false;
+    return { authenticated: false };
   }
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  const authenticated = await isCoarselyAuthenticated(request);
+  const auth = await getCoarseAuth(request);
 
   // If visiting /login or /register
   if (pathname === "/login" || pathname === "/register") {
@@ -43,9 +46,10 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    // Authenticated users visiting /login or /register directly are redirected to /resources
-    if (authenticated) {
-      return NextResponse.redirect(new URL("/resources", request.url));
+    // Authenticated users visiting /login or /register directly are redirected by role
+    if (auth.authenticated) {
+      const target = auth.role === "ADMIN" ? "/admin" : "/resources";
+      return NextResponse.redirect(new URL(target, request.url));
     }
   }
 
@@ -53,9 +57,11 @@ export async function proxy(request: NextRequest) {
   const isProtectedPath =
     pathname.startsWith("/resources") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/availability") ||
+    pathname.startsWith("/my-reservations") ||
     pathname.startsWith("/reservations");
 
-  if (!authenticated && isProtectedPath) {
+  if (!auth.authenticated && isProtectedPath) {
     const callback = `${pathname}${search}`;
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", callback);

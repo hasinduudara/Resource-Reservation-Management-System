@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { listResources } from "@/services/resources";
 import { listCategories } from "@/services/categories";
@@ -24,11 +25,14 @@ interface ResourcesPageProps {
 
 export default async function ResourcesPage({ searchParams }: ResourcesPageProps) {
   const user = await requireUser();
+  if (user.role === "ADMIN") {
+    redirect("/admin");
+  }
   const params = await searchParams;
 
   const q = params.q?.trim() || "";
   const categoryId = params.categoryId?.trim() || "";
-  const includeInactive = user.role === "ADMIN" && params.includeInactive === "true";
+  const includeInactive = false;
   const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
   const pageSize = 9; // Clean 3x3 grid for responsive display
 
@@ -87,19 +91,6 @@ export default async function ResourcesPage({ searchParams }: ResourcesPageProps
               </option>
             ))}
           </select>
-
-          {user.role === "ADMIN" && (
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer px-2 py-1 rounded border border-input bg-background h-9">
-              <input
-                type="checkbox"
-                name="includeInactive"
-                value="true"
-                defaultChecked={includeInactive}
-                className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
-              />
-              <span>Include inactive</span>
-            </label>
-          )}
 
           <Button type="submit" size="sm" variant="secondary" className="h-9">
             Search

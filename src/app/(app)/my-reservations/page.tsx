@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { listMyReservations, type ReservationDisplayStatus } from "@/services/reservations";
 import { formatInAppTimezone } from "@/lib/time";
@@ -58,6 +59,9 @@ function renderStatusBadge(status: ReservationDisplayStatus) {
 
 export default async function MyReservationsPage({ searchParams }: MyReservationsPageProps) {
   const user = await requireUser();
+  if (user.role === "ADMIN") {
+    redirect("/admin");
+  }
   const params = await searchParams;
 
   const currentTab = params.tab === "past" ? "past" : "upcoming";

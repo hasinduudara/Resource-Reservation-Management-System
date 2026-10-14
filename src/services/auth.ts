@@ -76,13 +76,49 @@ export async function authenticateCredentials(
 }
 
 /**
+ * Checks whether a path is member-only (/resources, /availability, /my-reservations).
+ * Note: /resources/[id] is NOT member-only (admins can view the read-only schedule).
+ */
+export function isMemberOnlyPath(pathname: string): boolean {
+  const cleanPath = pathname.split("?")[0].split("#")[0];
+  if (cleanPath === "/resources") return true;
+  if (cleanPath === "/availability" || cleanPath.startsWith("/availability/")) return true;
+  if (cleanPath === "/my-reservations" || cleanPath.startsWith("/my-reservations/")) return true;
+  return false;
+}
+
+/**
  * Validates and sanitizes callback URLs to prevent Open Redirect attacks.
  * Only internal relative paths starting with / (and not // or /\) are allowed.
  */
-export function getSafeCallbackUrl(url?: string | null): string {
-  if (!url) return "/resources";
+export function getSafeCallbackUrl(url?: string | null, fallback = "/resources"): string {
+  if (!url) return fallback;
   if (url.startsWith("/") && !url.startsWith("//") && !url.startsWith("/\\")) {
     return url;
   }
-  return "/resources";
+  return fallback;
 }
+
+/**
+ * Determines the post-login redirect path based on user role and callbackUrl.
+ * ADMIN goes to /admin, MEMBER goes to /resources.
+ * If a safe callbackUrl is provided, it is respected, but if an admin's callbackUrl points
+ * to a member-only page, they are sent to /admin.
+ */
+export function getRoleBasedRedirect(
+  role: "ADMIN" | "MEMBER",
+  callbackUrl?: string | null
+): string {
+  const defaultTarget = role === "ADMIN" ? "/admin" : "/resources";
+  if (!callbackUrl) {
+    return defaultTarget;
+  }
+
+  const safeUrl = getSafeCallbackUrl(callbackUrl, defaultTarget);
+  if (role === "ADMIN" && isMemberOnlyPath(safeUrl)) {
+    return "/admin";
+  }
+
+  return safeUrl;
+}
+

@@ -16,6 +16,7 @@ import {
   rejectUserAction,
   disableUserAction,
   enableUserAction,
+  setUserRoleAction,
 } from "@/app/(admin)/admin/users/actions";
 
 interface ApproveButtonProps {
@@ -211,3 +212,125 @@ export function EnableButton({ userId, userName }: EnableButtonProps) {
     </Button>
   );
 }
+
+interface RoleChangeButtonProps {
+  userId: string;
+  userName: string;
+}
+
+export function MakeAdminButton({ userId, userName }: RoleChangeButtonProps) {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleMakeAdmin = () => {
+    startTransition(async () => {
+      const res = await setUserRoleAction(userId, "ADMIN");
+      if (res.success) {
+        toast.success(res.message || `Promoted ${userName} to Administrator`);
+        setOpen(false);
+      } else {
+        toast.error(res.message || "Failed to update user role");
+      }
+    });
+  };
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        disabled={isPending}
+        className="h-8 px-2.5 text-xs text-primary hover:text-primary"
+      >
+        Make admin
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Promote to Administrator</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to make <strong className="text-foreground">{userName}</strong> an administrator? This user will be able to manage users, resources and reservations, and will no longer be able to make reservations.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleMakeAdmin}
+              disabled={isPending}
+            >
+              {isPending ? "Updating..." : "Make admin"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+export function RemoveAdminButton({ userId, userName }: RoleChangeButtonProps) {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleRemoveAdmin = () => {
+    startTransition(async () => {
+      const res = await setUserRoleAction(userId, "MEMBER");
+      if (res.success) {
+        toast.success(res.message || `Removed administrator role from ${userName}`);
+        setOpen(false);
+      } else {
+        toast.error(res.message || "Failed to update user role");
+      }
+    });
+  };
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setOpen(true)}
+        disabled={isPending}
+        className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+      >
+        Remove admin
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Administrator Role</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove administrator rights from <strong className="text-foreground">{userName}</strong>? This user will no longer be able to manage the system, and will be able to make reservations as a member.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRemoveAdmin}
+              disabled={isPending}
+            >
+              {isPending ? "Updating..." : "Remove admin"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+

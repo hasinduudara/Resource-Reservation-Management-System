@@ -78,13 +78,13 @@ export default async function ResourceDetailPage({
       {/* Navigation & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
-          href="/resources"
+          href={user.role === "ADMIN" ? "/admin/resources" : "/resources"}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to all resources
+          Back to resources
         </Link>
 
         {user.role === "ADMIN" && (
@@ -180,13 +180,20 @@ export default async function ResourceDetailPage({
 
       {/* Booking and Upcoming Schedule Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <BookingForm
-          resourceId={resource.id}
-          resourceName={resource.name}
-          isActive={resource.isActive}
-          defaultStart={prefill?.startLocal}
-          defaultEnd={prefill?.endLocal}
-        />
+        {user.role === "ADMIN" ? (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 p-4 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+            <div className="font-semibold text-sm text-foreground">Booking Restricted</div>
+            <p>Administrators cannot make reservations.</p>
+          </div>
+        ) : (
+          <BookingForm
+            resourceId={resource.id}
+            resourceName={resource.name}
+            isActive={resource.isActive}
+            defaultStart={prefill?.startLocal}
+            defaultEnd={prefill?.endLocal}
+          />
+        )}
         <UpcomingSchedule slots={upcomingSlots} />
       </div>
     </div>

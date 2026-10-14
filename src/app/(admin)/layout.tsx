@@ -26,15 +26,33 @@ export default async function AdminLayout({
             <nav className="flex items-center gap-4 text-sm font-medium">
               <Link
                 href="/admin"
-                className="text-foreground transition-colors hover:text-primary font-medium"
+                className="text-foreground transition-colors hover:text-foreground/80"
               >
                 Dashboard
               </Link>
               <Link
-                href="/resources"
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                href="/admin/users"
+                className="text-foreground transition-colors hover:text-foreground/80"
               >
-                App View
+                Users
+              </Link>
+              <Link
+                href="/admin/resources"
+                className="text-foreground transition-colors hover:text-foreground/80"
+              >
+                Resources
+              </Link>
+              <Link
+                href="/admin/categories"
+                className="text-foreground transition-colors hover:text-foreground/80"
+              >
+                Categories
+              </Link>
+              <Link
+                href="/admin/reservations"
+                className="text-foreground transition-colors hover:text-foreground/80"
+              >
+                Reservations
               </Link>
             </nav>
           </div>

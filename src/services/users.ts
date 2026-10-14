@@ -306,3 +306,74 @@ export async function enableUser(adminId: string, userId: string): Promise<SafeU
 
   return updated;
 }
+
+/**
+ * Promotes an ACTIVE MEMBER to ADMIN, or demotes an ACTIVE ADMIN to MEMBER.
+ * - Only administrators can perform this action.
+ * - Only ACTIVE users can change role (PENDING/DISABLED: ConflictError("Only active users can change role")).
+ * - An admin cannot change their own role (ForbiddenError("You cannot change your own role")).
+ * - The last ACTIVE admin can never be demoted (check and update inside one transaction).
+ * - If the user already has the requested role, returns ConflictError(`User is already a ${newRole}`).
+ * - Selects only safe fields; never returns passwordHash.
+ * - Existing reservations stay untouched.
+ */
+export async function setUserRole(
+  adminId: string,
+  userId: string,
+  newRole: "ADMIN" | "MEMBER"
+): Promise<SafeUserDetails> {
+  if (userId === adminId) {
+    throw new ForbiddenError("You cannot change your own role");
+  }
+
+  const adminActor = await db.user.findUnique({
+    where: { id: adminId },
+    select: { id: true, role: true, status: true },
+  });
+  if (!adminActor || adminActor.role !== "ADMIN") {
+    throw new ForbiddenError("Only administrators can change user roles");
+  }
+
+  return db.$transaction(async (tx) => {
+    const target = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, status: true },
+    });
+
+    if (!target) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (target.status !== "ACTIVE") {
+      throw new ConflictError("Only active users can change role");
+    }
+
+    if (target.role === newRole) {
+      throw new ConflictError(`User is already a ${newRole}`);
+    }
+
+    if (target.role === "ADMIN" && newRole === "MEMBER") {
+      const activeAdminCount = await tx.user.count({
+        where: {
+          role: "ADMIN",
+          status: "ACTIVE",
+        },
+      });
+
+      if (activeAdminCount <= 1) {
+        throw new ConflictError("Cannot demote the last active administrator");
+      }
+    }
+
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: {
+        role: newRole,
+      },
+      select: safeUserSelect,
+    });
+
+    return updated;
+  });
+}
+

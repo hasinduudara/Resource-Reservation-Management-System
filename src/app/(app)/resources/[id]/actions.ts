@@ -39,8 +39,8 @@ export async function createReservationAction(
   }
 
   try {
-    // User ID is strictly taken from the authenticated session
-    await createReservation(user.id, parsed.data);
+    // Actor ID and role are strictly taken from the authenticated session
+    await createReservation({ id: user.id, role: user.role }, parsed.data);
 
     revalidatePath(`/resources/${parsed.data.resourceId}`);
     revalidatePath("/my-reservations");

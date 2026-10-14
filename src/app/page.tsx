@@ -4,8 +4,11 @@ import { getCurrentUser } from "@/lib/session";
 export default async function HomePage() {
   const user = await getCurrentUser();
   if (user) {
+    if (user.role === "ADMIN") {
+      redirect("/admin");
+    }
     redirect("/resources");
   } else {
-    redirect("/login?callbackUrl=%2Fresources");
+    redirect("/login");
   }
 }

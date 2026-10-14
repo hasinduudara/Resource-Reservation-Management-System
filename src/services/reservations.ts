@@ -58,15 +58,38 @@ export interface ResourceUpcomingSlot {
   isMine: boolean;
 }
 
+export interface CreateReservationActor {
+  id: string;
+  role?: UserRole;
+}
+
 /**
  * Creates a new reservation for the given user.
  * Overlap prevention is strictly enforced by the PostgreSQL exclusion constraint (reservations_no_overlap).
  * Any exclusion constraint error is caught via isReservationOverlapError and converted into a helpful ConflictError.
+ * Administrators are managers only and are prohibited from making reservations.
  */
 export async function createReservation(
-  userId: string,
+  actor: CreateReservationActor | string,
   input: CreateReservationInput | CreateReservationOutput
 ) {
+  let userId: string;
+  if (typeof actor === "string") {
+    userId = actor;
+    const userRecord = await db.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    if (userRecord?.role === "ADMIN") {
+      throw new ForbiddenError("Administrators manage the system and cannot make reservations.");
+    }
+  } else {
+    if (actor.role === "ADMIN") {
+      throw new ForbiddenError("Administrators manage the system and cannot make reservations.");
+    }
+    userId = actor.id;
+  }
+
   const validated = createReservationSchema.safeParse(input);
   if (!validated.success) {
     throw new ValidationError("Invalid reservation details", validated.error.flatten());

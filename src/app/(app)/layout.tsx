@@ -17,37 +17,66 @@ export default async function AppLayout({
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
             <Link
-              href="/resources"
+              href={user.role === "ADMIN" ? "/admin" : "/resources"}
               className="text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
             >
               RRSM
             </Link>
             <nav className="flex items-center gap-4 text-sm font-medium">
-              <Link
-                href="/resources"
-                className="text-foreground transition-colors hover:text-foreground/80"
-              >
-                Resources
-              </Link>
-              <Link
-                href="/availability"
-                className="text-foreground transition-colors hover:text-foreground/80"
-              >
-                Availability
-              </Link>
-              <Link
-                href="/my-reservations"
-                className="text-foreground transition-colors hover:text-foreground/80"
-              >
-                My Reservations
-              </Link>
-              {user.role === "ADMIN" && (
-                <Link
-                  href="/admin"
-                  className="text-foreground transition-colors hover:text-primary font-semibold"
-                >
-                  Admin
-                </Link>
+              {user.role === "ADMIN" ? (
+                <>
+                  <Link
+                    href="/admin"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/admin/users"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Users
+                  </Link>
+                  <Link
+                    href="/admin/resources"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Resources
+                  </Link>
+                  <Link
+                    href="/admin/categories"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Categories
+                  </Link>
+                  <Link
+                    href="/admin/reservations"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Reservations
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/resources"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Resources
+                  </Link>
+                  <Link
+                    href="/availability"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    Availability
+                  </Link>
+                  <Link
+                    href="/my-reservations"
+                    className="text-foreground transition-colors hover:text-foreground/80"
+                  >
+                    My Reservations
+                  </Link>
+                </>
               )}
             </nav>
           </div>

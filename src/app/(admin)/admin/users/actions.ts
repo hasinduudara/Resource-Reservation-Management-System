@@ -8,6 +8,7 @@ import {
   rejectUser,
   disableUser,
   enableUser,
+  setUserRole,
 } from "@/services/users";
 import { AppError } from "@/lib/errors";
 
@@ -117,3 +118,40 @@ export async function enableUserAction(userId: string): Promise<AdminActionResul
     return { success: false, message: "An unexpected error occurred. Please try again." };
   }
 }
+
+const setUserRoleSchema = z.object({
+  userId: z.string().uuid("Invalid user ID format"),
+  newRole: z.enum(["ADMIN", "MEMBER"], { message: "Invalid role specified" }),
+});
+
+/**
+ * Server action to promote or demote an active user's role.
+ * Protected by assertRole("ADMIN").
+ */
+export async function setUserRoleAction(
+  userId: string,
+  newRole: "ADMIN" | "MEMBER"
+): Promise<AdminActionResult> {
+  try {
+    const admin = await assertRole("ADMIN");
+    const parsed = setUserRoleSchema.parse({ userId, newRole });
+
+    await setUserRole(admin.id, parsed.userId, parsed.newRole);
+
+    revalidatePath("/admin/users");
+    revalidatePath("/admin");
+    return {
+      success: true,
+      message: `User role successfully updated to ${parsed.newRole}.`,
+    };
+  } catch (error) {
+    if (error instanceof AppError) {
+      return { success: false, message: error.message };
+    }
+    if (error instanceof z.ZodError) {
+      return { success: false, message: error.issues[0]?.message || "Validation failed" };
+    }
+    return { success: false, message: "An unexpected error occurred. Please try again." };
+  }
+}
+

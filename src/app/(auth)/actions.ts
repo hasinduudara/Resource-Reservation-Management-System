@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { registerSchema, loginSchema } from "@/lib/validation/auth";
 import { registerUser } from "@/services/users";
-import { authenticateCredentials, getSafeCallbackUrl } from "@/services/auth";
+import { authenticateCredentials, getRoleBasedRedirect } from "@/services/auth";
 import { signSessionToken, setSessionCookie, deleteSessionCookie } from "@/lib/auth-token";
 import { ConflictError, ValidationError } from "@/lib/errors";
 
@@ -112,8 +112,8 @@ export async function loginAction(
 
   await setSessionCookie(token);
 
-  // Redirect to safe callbackUrl (defaults to /resources)
-  const safeRedirect = getSafeCallbackUrl(callbackUrl);
+  // Redirect by role, respecting safe callbackUrl unless admin points to member-only page
+  const safeRedirect = getRoleBasedRedirect(result.user.role, callbackUrl);
   redirect(safeRedirect);
 }
 
