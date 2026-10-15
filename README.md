@@ -194,7 +194,7 @@ The database consists of 4 primary relational tables defined in `prisma/schema.p
 - **`Resource`:** Shared assets with name, category reference (`categoryId`), location, capacity, description, and active status (`isActive`).
 - **`Reservation`:** Booking records linking `resourceId`, `userId`, `startTime`, `endTime`, `purpose`, and `status` (`CONFIRMED`, `CANCELLED`).
 
-**ER Diagram:** <ADD SHAREABLE LINK HERE>
+**ER Diagram:** https://dbdiagram.io/d/6ad0418eaebfe7a21ff366a9
 
 *(Note: The schema is maintained in `prisma/schema.prisma`. The PostgreSQL exclusion constraint for overlap prevention is defined in migration `prisma/migrations/20261012082154_add_reservation_constraints/migration.sql`).*
 
