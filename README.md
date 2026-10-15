@@ -1,14 +1,44 @@
-# Resource Reservation Management System (RRSM)
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=260&section=header&text=RRSM&fontSize=90&fontAlignY=36&animation=fadeIn&desc=Resource%20Reservation%20Management%20System&descSize=24&descAlignY=60&fontColor=ffffff" alt="RRSM banner" width="100%" />
+
+<a href="https://github.com/hasinduudara">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1200&color=8B5CF6&center=true&vCenter=true&width=760&lines=Zero+double-bookings+with+PostgreSQL+exclusion+constraints;Timezone-aware+scheduling+(Asia%2FColombo+%E2%86%94+UTC);Role-based+workflows+%7C+Admin+oversight;Real-time+availability+timelines+%26+usage+analytics" alt="Typing SVG" />
+</a>
+
+<br/>
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma_6-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod_4-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+<br/>
 
 A modern full-stack web application designed to manage shared organizational resources (rooms, vehicles, hardware) with mathematical conflict prevention, timezone-aware scheduling, role-based workflows, and administrative oversight.
 
+<br/>
+
+<a href="https://dbdiagram.io/d/6ad0418eaebfe7a21ff366a9"><img src="https://img.shields.io/badge/ER_Diagram-8B5CF6?style=for-the-badge&logo=databricks&logoColor=white" alt="ER Diagram" /></a>
+&nbsp;
+<a href="https://drive.google.com/file/d/1RhH1zanl5o-rXf2UJDTh2JDRG2GLzvqu/view?usp=sharing"><img src="https://img.shields.io/badge/Demo_Video-EF4444?style=for-the-badge&logo=youtube&logoColor=white" alt="Demo Video" /></a>
+
+</div>
+
+<br/>
+
 ---
 
-## 1. Description & Problem Solved
+## 🎯 1. Description & Problem Solved
 
 Organizations frequently struggle with double-bookings, timezone confusion, manual approval bottlenecks, and lack of utilization visibility when sharing high-demand assets like conference rooms, company vehicles, and presentation equipment.
 
-**The Solution:** RRSM guarantees zero double-bookings using PostgreSQL-level exclusion constraints, standardizes all user scheduling to the organization's business timezone (`Asia/Colombo`, UTC+05:30) while persisting records in UTC, enforces role segregation (administrators manage; members reserve), and delivers immediate real-time availability timelines and aggregated usage analytics.
+> ### 💡 The Solution
+> RRSM guarantees zero double-bookings using PostgreSQL-level exclusion constraints, standardizes all user scheduling to the organization's business timezone (`Asia/Colombo`, UTC+05:30) while persisting records in UTC, enforces role segregation (administrators manage; members reserve), and delivers immediate real-time availability timelines and aggregated usage analytics.
 
 ---
 
@@ -16,9 +46,9 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 
 **Demo Video:** https://drive.google.com/file/d/1RhH1zanl5o-rXf2UJDTh2JDRG2GLzvqu/view?usp=sharing
 
-## 2. Features by Role
+## ✨ 2. Features by Role
 
-### Member Features
+### 👤 Member Features
 - **Account Registration & Self-Service:** Register for an account; access is held in `PENDING` status until verified and approved by an administrator.
 - **Resource Catalog & Filtering:** Search and browse active resources with category filters, capacity indicators, location details, and descriptions.
 - **Availability Timeline:** Inspect visual daily timeline slots (08:00 to 20:00) showing booked and free windows for any selected date.
@@ -27,7 +57,7 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 - **My Reservations:** View upcoming scheduled bookings and past/cancelled reservation history; self-cancel upcoming reservations.
 - **Privacy Enforcement:** Member views show timeline occupancy blocks without revealing other users' booking purposes or personal identities.
 
-### Administrator Features (Managers Only)
+### 🛡️ Administrator Features (Managers Only)
 > **Note on Role Segregation:** Administrators manage the system and do **not** make reservations or use member booking pages.
 - **User Management:** Review pending member registrations; approve or reject applicants; disable or re-enable existing accounts; promote or demote members to/from the admin role.
 - **Resource Management:** Create, edit, and toggle active/inactive status for resources. (Resources are soft-deactivated, never hard-deleted).
@@ -37,7 +67,15 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 
 ---
 
-## 3. Tech Stack
+## 🧰 3. Tech Stack
+
+<div align="center">
+
+<img src="https://skillicons.dev/icons?i=nextjs,react,ts,postgres,prisma,tailwind,nodejs,docker&theme=dark&perline=8" alt="Tech stack icons" />
+
+</div>
+
+<br/>
 
 - **Next.js 16.4.0 (App Router & Turbopack):** Modern server-side rendering, React Server Components (RSC), and type-safe server actions.
 - **React 19.3.0:** Latest React core runtime with React Compiler optimizations.
@@ -51,7 +89,7 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 
 ---
 
-## 4. Prerequisites
+## 📋 4. Prerequisites
 
 - **Node.js:** v20.x or higher (tested on Node v24.20.0)
 - **npm:** v10.x or higher
@@ -59,23 +97,23 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 
 ---
 
-## 5. Local Setup (Copy-Pasteable)
+## 🚀 5. Local Setup (Copy-Pasteable)
 
-### Step 1: Clone and Install
+### 📥 Step 1: Clone and Install
 ```bash
 git clone <repository-url>
 cd rrsm
 npm install
 ```
 
-### Step 2: Create Local Database
+### 🗄️ Step 2: Create Local Database
 Create a PostgreSQL database named `reservations` using `psql`:
 ```bash
 psql -U postgres -c "CREATE DATABASE reservations;"
 ```
 *(Alternative: Open pgAdmin, right-click "Databases" -> "Create" -> "Database...", and enter `reservations`).*
 
-### Step 3: Configure Environment Variables
+### 🔐 Step 3: Configure Environment Variables
 Copy `.env.example` to create `.env`:
 ```bash
 # On Linux / macOS / Git Bash:
@@ -98,20 +136,20 @@ Open `.env` and configure the variables:
 - `SEED_ADMIN_PASSWORD`: Initial administrator password (e.g., `AdminPassword123!`).
 - `APP_TIMEZONE`: Timezone for all organizational scheduling (`Asia/Colombo`).
 
-### Step 4: Apply Database Migrations
+### 🧱 Step 4: Apply Database Migrations
 Run the migration deploy command to execute all migrations in `prisma/migrations` against the database:
 ```bash
 npx prisma migrate deploy
 ```
 *(In an active development cycle when modifying schema definitions, use `npm run db:migrate` instead).*
 
-### Step 5: Seed Demo Data
+### 🌱 Step 5: Seed Demo Data
 Populate the database with the initial admin, member accounts, categories, sample resources, and initial reservations:
 ```bash
 npm run db:seed
 ```
 
-### Step 6: Start the Development Server
+### ▶️ Step 6: Start the Development Server
 ```bash
 npm run dev
 ```
@@ -119,7 +157,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Verify data
 
 ---
 
-## 6. Docker Option (Optional, Not Verified)
+## 🐳 6. Docker Option (Optional, Not Verified)
 
 A `docker-compose.yml` file is provided in the repository to spin up a containerized PostgreSQL instance on port `5433`:
 ```bash
@@ -137,7 +175,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5433/reservations"
 
 ---
 
-## 7. Demo Accounts
+## 🔑 7. Demo Accounts
 
 The database seed creates the following demonstration accounts (passwords are for local development only):
 
@@ -151,7 +189,7 @@ The database seed creates the following demonstration accounts (passwords are fo
 
 ---
 
-## 8. Walkthrough: How to Try the System
+## 🧪 8. Walkthrough: How to Try the System
 
 1. **Test Registration & Approval:**
    - Go to [http://localhost:3000/register](http://localhost:3000/register) and register a new user (e.g., `eve@example.com`).
@@ -177,7 +215,7 @@ The database seed creates the following demonstration accounts (passwords are fo
 
 ---
 
-## 9. Key Design Decisions
+## 🧠 9. Key Design Decisions
 
 1. **PostgreSQL Exclusion Constraint (`btree_gist`):** Double-booking prevention is enforced inside PostgreSQL via `EXCLUDE USING gist (resource_id WITH =, tstzrange(start_time, end_time, '[)') WITH &&) WHERE (status = 'CONFIRMED')`. Application-level check-then-insert is prone to race conditions under concurrent requests; database-level exclusion makes double-booking physically impossible.
 2. **UTC Storage with Fixed Application Timezone:** All timestamps are converted to UTC via `toUtc()` upon submission and stored in UTC in PostgreSQL. All UI rendering uses `APP_TIMEZONE` (`Asia/Colombo`, UTC+05:30) via `formatInAppTimezone()`, eliminating discrepancies across client browsers and server runtime zones.
@@ -190,7 +228,7 @@ The database seed creates the following demonstration accounts (passwords are fo
 
 ---
 
-## 10. Database Schema
+## 🗃️ 10. Database Schema
 
 The database consists of 4 primary relational tables defined in `prisma/schema.prisma`:
 - **`User`:** Stores user credentials (`passwordHash`), role (`ADMIN`, `MEMBER`), status (`PENDING`, `ACTIVE`, `DISABLED`), and administrator approval metadata (`approvedById`, `approvedAt`).
@@ -202,7 +240,7 @@ The database consists of 4 primary relational tables defined in `prisma/schema.p
 
 ---
 
-## 11. Available Scripts
+## 📜 11. Available Scripts
 
 All scripts defined in `package.json`:
 
@@ -229,7 +267,7 @@ All scripts defined in `package.json`:
 
 ---
 
-## 12. Project Structure
+## 🗂️ 12. Project Structure
 
 ```text
 rrsm/
@@ -272,7 +310,7 @@ rrsm/
 
 ---
 
-## 13. Assumptions, Limitations & Future Improvements
+## 🔭 13. Assumptions, Limitations & Future Improvements
 
 - **Email Verification & Reset:** Currently, users register and wait for administrator approval; automated email verification tokens and "Forgot Password" self-service flows can be added using a transactional email service (e.g., Resend).
 - **Recurring Reservations:** Reservations are currently single discrete intervals; recurring weekly or monthly bookings could be introduced with bulk conflict detection.
@@ -283,7 +321,7 @@ rrsm/
 
 ---
 
-## 14. Troubleshooting
+## 🛠️ 14. Troubleshooting
 
 - **Port 5432 in use:**
   If port `5432` is occupied by another service or existing PostgreSQL instance, adjust the port in `DATABASE_URL` (or configure PostgreSQL's `postgresql.conf` to use an alternative port such as `5434`).
@@ -293,3 +331,21 @@ rrsm/
   Double-check the credentials specified in `DATABASE_URL` within `.env`. Ensure the password matches what was configured during PostgreSQL installation.
 - **`btree_gist` extension errors:**
   The second migration creates the `btree_gist` extension (`CREATE EXTENSION IF NOT EXISTS btree_gist;`). Ensure the PostgreSQL user has superuser privileges (default for `postgres`) to install extensions in the database.
+
+---
+
+<div align="center">
+
+## 🤝 Connect With Me
+
+<a href="https://hasinduudara.me/"><img src="https://img.shields.io/badge/Portfolio-hasinduudara.me-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Portfolio" /></a>
+&nbsp;
+<a href="https://www.linkedin.com/in/hasindu-udara"><img src="https://img.shields.io/badge/LinkedIn-hasindu--udara-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+&nbsp;
+<a href="https://github.com/hasinduudara"><img src="https://img.shields.io/badge/GitHub-hasinduudara-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
+
+<br/><br/>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=140&section=footer" alt="footer" width="100%" />
+
+</div>
