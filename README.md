@@ -12,6 +12,10 @@ Organizations frequently struggle with double-bookings, timezone confusion, manu
 
 ---
 
+**ER Diagram:** https://dbdiagram.io/d/6ad0418eaebfe7a21ff366a9
+
+**Demo Video:** https://drive.google.com/file/d/1RhH1zanl5o-rXf2UJDTh2JDRG2GLzvqu/view?usp=sharing
+
 ## 2. Features by Role
 
 ### Member Features
@@ -193,8 +197,6 @@ The database consists of 4 primary relational tables defined in `prisma/schema.p
 - **`ResourceCategory`:** Organizational classification for assets (name, description).
 - **`Resource`:** Shared assets with name, category reference (`categoryId`), location, capacity, description, and active status (`isActive`).
 - **`Reservation`:** Booking records linking `resourceId`, `userId`, `startTime`, `endTime`, `purpose`, and `status` (`CONFIRMED`, `CANCELLED`).
-
-**ER Diagram:** https://dbdiagram.io/d/6ad0418eaebfe7a21ff366a9
 
 *(Note: The schema is maintained in `prisma/schema.prisma`. The PostgreSQL exclusion constraint for overlap prevention is defined in migration `prisma/migrations/20261012082154_add_reservation_constraints/migration.sql`).*
 
