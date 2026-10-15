@@ -96,9 +96,16 @@ export default function GlobalError({
             <button type="button" className="btn-primary" onClick={() => reset()}>
               Try again
             </button>
-            <a href="/" className="btn btn-outline">
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={() => {
+                // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+                window.location.href = "/";
+              }}
+            >
               Go home
-            </a>
+            </button>
           </div>
         </div>
       </body>

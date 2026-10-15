@@ -15,7 +15,6 @@
 
 import { db } from "../src/lib/db";
 import {
-  listCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -24,7 +23,6 @@ import {
   listResources,
   getResourceById,
   createResource,
-  updateResource,
   setResourceActive,
   countUpcomingReservations,
 } from "../src/services/resources";
@@ -34,7 +32,6 @@ import {
   deleteCategoryAction,
 } from "../src/app/(admin)/admin/categories/actions";
 import {
-  createResourceAction,
   setResourceActiveAction,
 } from "../src/app/(admin)/admin/resources/actions";
 import { ConflictError, NotFoundError } from "../src/lib/errors";
